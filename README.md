@@ -1,6 +1,9 @@
-# Project Title
+# Streaming - Real-Time Advanced Analytics
 
-One Paragraph of project description goes here
+Goal of this workshop will be to build an Azure infrastruture full PaaS oriented and create a kind og “hello world” streaming application in Azure.
+
+Something like: simple producer -> to Event Hubs -> to Databricks -> Datalake -> SQL Data Warehouse.
+
 
 ## Getting Started
 
