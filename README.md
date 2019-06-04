@@ -73,16 +73,23 @@ Select the API : Core (SQL)
 Location : East US
 Click on create.
 
-Before doing this : you may have to add your current IP public adress to the firewall rule. (propagation could take 15 min... BREAK ?)
-
 Once the service is up, using Data Explorer, create 
 a new database : 'malefedb'
 click on Provision database throughput and set the value to 15000
 add a new container : 'transactions'
 add a new partition key : '/ipCountryCode'
 
+Then, you will configure Cosmos DB's time-to-live (TTL) settings to On with no default. This will allow the data generator to expire, or delete, the ingested messages after any desired period of time by setting the TTL value (object property of ttl) on individual messages as they are sent.
 
+Next you will pass in the Azure Cosmos DB URI and Key values to the data generator so it can connect to and send events to your collection.
 
+Navigate to your Azure Cosmos DB account in the Azure portal, then select Settings on the left-hand menu.
+Under Settings within the Settings blade, select the On (no default) option for Time to Live. This setting is required to allow documents added to the container to be configured with their own TTL values.
+
+Select Save to apply your settings
+
+On the Azure Cosmos DB Account blade, select Keys.
+Copy the endpoint URI and Primary Key for Cosmos DB. Save this value to notepad or similar for use later
 
 
  #### Step 4 : Configuring Event Hubs and the transaction generator
@@ -117,6 +124,7 @@ SECONDS_TO_RUN is the maximum amount of time to allow the generator to run befor
 If the ONLY_WRITE_TO_COSMOS_DB property is set to true, no records will be sent to the Event Hubs instances. Default value is false.
 
 Copy your Event Hub connection string value you copied from the Sender policy and saved during the steps you completed in the before the hands-on lab setup guide. Paste this value into the double-quotes located next to EVENT_HUB_1_CONNECTION_STRING.
+BE-CARREFULL here : we have to add ";EntityPath=transactions" after ;SharedAccessKey=[REDACTED];EntityPath=transactions
 
 Example :
 ```
@@ -151,6 +159,80 @@ EventHubClient.CreateFromConnectionString(
 ),
 ```
 Save your changes.
+
+ #### Step 5 : Configuring CosmosDB and the transaction generator
+Open the appsettings.json file once more. Paste your Cosmos DB endpoint value next to COSMOS_DB_ENDPOINT, and the Cosmos DB authorization key next to COSMOS_DB_AUTH_KEY.
+
+Save your changes.
+
+Open Program.cs and paste the code below under TODO 4 to send the generated transaction data to Cosmos DB and store the returned ResourceResponse object into a new variable for statistics about RU/s used:
+```
+var response = await _cosmosDbClient.CreateDocumentAsync(collectionUri, transaction)
+    .ConfigureAwait(false);
+```
+
+Paste the code below under TODO 5 to append the number of RU/s consumed to the _cosmosRUsPerBatch variable:
+```
+_cosmosRUsPerBatch += response.RequestCharge;
+```
+
+Paste the code below under TODO 6 to set the Cosmos DB connection policy:
+```
+var connectionPolicy = new ConnectionPolicy
+{
+    ConnectionMode = ConnectionMode.Direct,
+    ConnectionProtocol = Protocol.Tcp
+};
+```
+
+
+line 29 : change private const string DatabaseName to paste the exact dbname you have configured.
+
+Save your changes.
+
+### Run
+
+Run the console app by clicking Debug, then Start Debugging in the top menu in Visual Studio, or press F-5 on your keyboard.
+
+The PaymentGenerator console window will open, and you should see it start to send data after a few seconds. You may close the window or press Ctrl+C or Ctrl+Break at any time to stop sending data to Event Hubs and Cosmos DB.
+
+The top of the output displays information about the Cosmos DB container you created (transactions), the requested RU/s as well as estimated hourly and monthly cost. After every 1,000 records are requested to be sent, you will see output statistics so you can compare Event Hubs to Cosmos DB. Be on the lookout for the following:
+
+Compare Event Hub to Cosmos DB statistics. They should have similar processing times and successful calls.
+Inserted line shows successful inserts in this batch and throughput for writes/second with RU/s usage and estimated monthly ingestion rate added to Cosmos DB statistics.
+Processing time: Shows whether the processing time for the past 1,000 requested inserts is faster or slower than the other service.
+Total elapsed time: Running total of time taken to process all documents.
+If this value continues to grow higher for Cosmos DB vs. Event Hubs, that is a good indicator that the Cosmos DB requests are being throttled. Consider increasing the RU/s for the container.
+Succeeded shows number of accumulative successful inserts to the service.
+Pending are items in the bulkhead queue. This amount will continue to grow if the service is unable to keep up with demand.
+Accumulative failed requests that encountered an exception.
+The obvious and recommended method for sending a lot of data is to do so in batches. This method can multiply the amount of data sent with each request by hundreds or thousands. However, the point of our exercise is not to maximize throughput and send as much data as possible, but to compare the relative performance between Event Hubs and Cosmos DB.
+
+As an experiment, you can scale down the number of requested RU/s for your Cosmos DB container to 700. After doing so, you should see increasingly slower transfer rates to Cosmos DB due to throttling. You will also see the pending queue growing at a higher rate. The reason for this is because when the number of writes (remember, writes typically use 5 RU/s vs. just 1 RU/s for reads on 1 KB-sized documents) exceeds the allotted amount of RU/s, Cosmos DB sends a 429 response with a retry_after header value to tell the consumer that it is resource-constrained. The SDK automatically handles this by waiting for the specified amount of time, then retrying. After you are done experimenting, set the RU/s back to 15,000.
+
+### Choosing between Cosmos DB and Event Hubs for ingestion
+
+Depending of the requirements around ingesting data, including data retention of the hot data and geographic locations to which the data is replicated for high availability and global distribution of the data for processing. There are many similarities between Event Hubs and Cosmos DB that allow both to work well for data ingestion. However, these services have some significant differences in their overall feature set that you need to evaluate to choose the best option for this situation.
+
+Cosmos DB allows for more flexible, and longer, TTL (message retention) than Event Hubs, which is capped at 7 days, or 4 weeks when you contact Microsoft to request the extra capacity. Another option for Event Hubs is to use a dedicated Event Hubs or Event Hub Capture to simultaneously save ingested data to Blob Storage or Azure Data Lake Store for longer retention and cold storage. However, this will require additional development, including automatic clearing of the data after a period of time.
+
+If you want to be able to easily query this data during the 60-day message retention period, from a database. This could also be accomplished through Azure Data Warehouse using Polybase to query the files, we will configure all of taht. 
+Using CosmosDB, this another service they may otherwise not need, as well as additional development, administration, and cost.
+
+Finally, the requirement to synchronize/write the ingested data to multiple regions, which could grow at any time, makes Cosmos DB a more favorable choice.
+
+## Understanding and preparing the transaction data at scale
+In this exercise, you will create connections from your Databricks workspace to ADLS Gen2 and Event Hub. 
+Then, using Azure Databricks you will import and explore some of the historical raw transaction data provided to gain a better understanding of the preparation that needs to be done prior to using the data for building and training a machine learning model. 
+
+You will then use the connection to Event Hub from Databricks to read streaming transactions directly. Finally, you will write the incoming streaming transaction data into an Azure Databricks Delta table stored in your data lake.
+
+### deploy Azure Data Store gen2
+
+#### Create a service principal for OAuth access to the ADLS Gen2 filesystem
+
+### deploy Azure Databricks
+
 
 And repeat
 
