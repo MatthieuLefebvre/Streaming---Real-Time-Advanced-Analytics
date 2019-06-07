@@ -230,16 +230,17 @@ You will then use the connection to Event Hub from Databricks to read streaming 
 ### deploy Azure Data Store gen2
 
 1. deploy an ADLS Gen2 Storage account
-add ressource : search for **Storage Account**
-Click on **Create**
-Select the right subscription and the right ressource group and then choose a storage account name like **prefixselabadlsgen2**
-Take the right location (East US) 
-Performace : Keep Standard
-Account Kind : Storage V2
-Replication : you can choose RA-GRS (3 local copie of data + 3 other copie in another Azure Region) if you want to test this capabilities, if not just choose LRS (3 local copie of data)
-In Advanced Tab : make sure to choose DATA LAKE STORAGE GEN2 Hierarchical namespace enabled.
-Apply Tag if you want to. 
-Then Create !
+
+- add ressource : search for **Storage Account**
+- Click on **Create**
+- Select the right subscription and the right ressource group and then choose a storage account name like **prefixselabadlsgen2**
+- Take the right location (East US) 
+- Performance : Keep Standard
+- Account Kind : Storage V2
+- Replication : you can choose RA-GRS (3 local copie of data + 3 other copie in another Azure Region) if you want to test this capabilities, if not just choose LRS (3 local copie of data)
+- In Advanced Tab : make sure to choose **DATA LAKE STORAGE GEN2 Hierarchical namespace enabled**
+- Apply Tag if you want to. 
+- Then Create !
 
 As an added layer of security when accessing an ADLS Gen2 filesystem using Databricks you can use OAuth 2.0 for authentication. In this task, you will use the Azure CLI to create an identity in Azure Active Directory (Azure AD) known as a service principal to facilitate the use of OAuth authentication.
 
