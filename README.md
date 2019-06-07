@@ -229,6 +229,40 @@ You will then use the connection to Event Hub from Databricks to read streaming 
 
 ### deploy Azure Data Store gen2
 
+1. deploy an ADLS Gen2 Storage account
+add ressource : search for **Storage Account**
+Click on **Create**
+Select the right subscription and the right ressource group and then choose a storage account name like **prefixselabadlsgen2**
+Take the right location (East US) 
+Performace : Keep Standard
+Account Kind : Storage V2
+Replication : you can choose RA-GRS (3 local copie of data + 3 other copie in another Azure Region) if you want to test this capabilities, if not just choose LRS (3 local copie of data)
+In Advanced Tab : make sure to choose DATA LAKE STORAGE GEN2 Hierarchical namespace enabled.
+Apply Tag if you want to. 
+Then Create !
+
+As an added layer of security when accessing an ADLS Gen2 filesystem using Databricks you can use OAuth 2.0 for authentication. In this task, you will use the Azure CLI to create an identity in Azure Active Directory (Azure AD) known as a service principal to facilitate the use of OAuth authentication.
+
+> **IMPORTANT**: You must have permissions within your Azure subscription to create an App registration and service principal within Azure  Active Directory to complete this task.
+
+2. In the Azure portal, select the Cloud Shell icon in the top toolbar.
+
+2. Ensure PowerShell is selected in the Cloud Shell pane
+
+3. Next, you will issue a command to create a service principal named seanalytics-sp and assign it to the Storage Blob Data Contributor role on your ADLS Gen2 Storage account. The command will be in the following format:
+
+```
+az ad sp create-for-rbac -n "seanalytics-sp" --role "Storage Blob Data Contributor" --scopes {adls-gen2-storage-account-resource-id}
+```
+> **IMPORTANT** : You will need to replace the {adls-gen2-storage-account-resource-id} value with the resource ID of your ADLS Gen2 Storage account.
+
+4. To retrieve the ADLS Gen2 Storage account resource ID you need to replace above, navigate to your Resource groups in the Azure navigation menu.
+
+5. In your resource group, select the ADLS Gen2 Storage account you provisioned previously, and on the ADLS Gen2 Storage account blade select **Properties** under **Settings** in the left-hand menu, and then select the copy to clipboard button to the right of the **Storage account resource ID** value.
+
+
+
+
 #### Create a service principal for OAuth access to the ADLS Gen2 filesystem
 
 ### deploy Azure Databricks
