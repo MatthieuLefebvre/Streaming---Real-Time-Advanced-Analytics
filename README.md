@@ -229,6 +229,9 @@ You will then use the connection to Event Hub from Databricks to read streaming 
 
 ### deploy Azure Data Store gen2
 
+
+#### Task 1 : deploy an ADLS gen2 storage and create a service principal for OAuth access to the ADLS Gen2 filesystem
+
 1. deploy an ADLS Gen2 Storage account
 
 - add ressource : search for **Storage Account**
@@ -259,12 +262,180 @@ az ad sp create-for-rbac -n "seanalytics-sp" --role "Storage Blob Data Contribut
 
 4. To retrieve the ADLS Gen2 Storage account resource ID you need to replace above, navigate to your Resource groups in the Azure navigation menu.
 
-5. In your resource group, select the ADLS Gen2 Storage account you provisioned previously, and on the ADLS Gen2 Storage account blade select **Properties** under **Settings** in the left-hand menu, and then select the copy to clipboard button to the right of the **Storage account resource ID** value.
+5. In your resource group, select the ADLS Gen2 Storage account you provisioned previously, and on the ADLS Gen2 Storage account blade select 
+- **Properties** under **Settings** in the left-hand menu, 
+- and then select the copy to clipboard button to the right of the **Storage account resource ID** value.
+
+6. Paste the Storage account resource ID into the command above, and then copy and paste the updated ```az ad sp create-for-rbac``` command at the Cloud Shell prompt and press Enter. The command should retrieve Json like value with your subscription ID, App ID, etc.
+
+7. Copy the output from the command into a text editor, as you will need it in the following steps.
+
+8. To verify the role assignment, select Access control (IAM) from the left-hand menu of the ADLS Gen2 Storage account blade, and then select the Role assignments tab and locate seanalytics-sp under the STORAGE BLOB DATA CONTRIBUTOR role.
+
+#### Task 2: Add the service principal credentials and Tenant Id to Azure Key Vault
+
+1.Deploy an Azure key Vault ressource into your ressource group
+- search for Key Vault
+- Enter a name like selab-keyvault
+- be carefull and choise the right subscription and the right RG
+- Location : East US
+- Pricing : Standard (Premium is to connect with an HSM device)
+- Access Policies : Keep default
+- Vnet : keep default
+- Then Create ! 
+
+1. To provide access your ADLS Gen2 account from Azure Databricks you will use secrets stored in your Azure Key Vault account to provide the credentials of your newly created service principal within Databricks. Navigate to your Azure Key Vault account in the Azure portal, then select **Access Policies** and select the **+ Add new** button.
+
+2. Choose the account that you are currently logged into the portal with as the principal and check Select all under ```key permissions, secret permissions, and certificate permissions,``` then click OK and then click **Save**.
+
+3. Now select **Secrets** under Settings on the left-hand menu. On the Secrets blade, select **+ Generate/Import** on the top toolbar.
+
+4. On the Create a secret blade, enter the following:
+
+- **Upload options**: Select Manual.
+- **Name**: Enter "selab-SP-Client-ID".
+- **Value**: Paste the **appId** value from the Azure CLI output you copied in an earlier step.
+
+5. Select **Create**.
+
+6. Select **+ Generate/Import** again on the top toolbar to create another secret.
+
+7. On the Create a secret blade, enter the following:
+
+- **Upload options**: Select Manual.
+- **Name**: Enter "selab-SP-Client-Key".
+- **Value**: Paste the password value from the Azure CLI output you copied in an earlier step.
+
+8. Select **Create**.
+
+9. To perform authentication using the service principal account in Databricks you will also need to provide your Azure AD Tenant ID. Select **+ Generate/Import** again on the top toolbar to create another secret.
+
+10. On the Create a secret blade, enter the following:
+
+- **Upload options**: Select Manual.
+- **Name**: Enter "Azure-Tenant-ID".
+- **Value**: Paste the tenant value from the Azure CLI output you copied in an earlier step.
+
+11. Select **Create**.
+
+#### Task 3: Configure ADLS Gen2 Storage Account in Key Vault
+
+In this task, you will configure the Key for the ADLS Gen2 Storage Account within Key Vault.
+
+1. In the Azure Portal, navigate to the **ADLS Gen2 Storage Account**, then select **Access keys** under Settings on the left-hand menu. You are going to copy the **Storage account name** and **Key** values and add them as secrets in your Key Vault account.
+
+2. Open a new browser tab or window and navigate to your Azure Key Vault account in the Azure portal, then select **Secrets** under Settings on the left-hand menu. On the Secrets blade, select **+ Generate/Import** on the top toolbar.
+
+3. On the Create a secret blade, enter the following:
+
+- **Upload options**: Select Manual.
+- **Name**: Enter "ADLS-Gen2-Account-Name".
+- **Value**: Paste the Storage account name value you copied in an earlier step.
+
+4. Select **Create**.
+
+5. Select **+ Generate/Import** again on the top toolbar to create another secret.
+
+6. On the Create a secret blade, enter the following:
+
+- **Upload options**: Select Manual.
+- **Name**: Enter "ADLS-Gen2-Account-Key".
+- **Value**: Paste the Storage account Key value you copied in an earlier step.
+
+7. Select **Create**.
+
+#### Task 4: Create an Azure Databricks cluster
+In this task, you will connect to your Azure Databricks workspace and create a cluster to use for this lab.
+
+1. Return to the Azure portal :
+- Provision an **Azure Databricks workspace**
+- Then navigate into the new ressource, and select **Launch Workspace** from the overview blade, signing into the workspace with your Azure credentials, if required.
+
+2. Welcome to Azure Databricks ! 
+
+3. Select **Clusters** from the left-hand navigation menu, and then select **+ Create Cluster**.
+
+4. On the Create Cluster screen, enter the following:
+
+- **Cluster Name**: Enter a name for your cluster, such as lab-cluster.
+
+- **Cluster Mode**: Select Standard.
+
+- **Databricks Runtime Version**: Select Runtime: 5.2 (Scala 2.11, Spark 2.4.0).
+
+- **Python Version**: Select 3.
+
+- **Enable autoscaling**: Ensure this is checked.
+
+- **Terminate after XX minutes of inactivity**: Leave this checked, and the number of minutes set to 120.
+
+- **Worker Type**: Select Standard_DS4_v2.
+
+- **Min Workers**: Leave set to 2.
+- **Max Workers**: Leave set to 8.
+- **Driver Type**: Set to Same as worker.
+
+- **Expand Advanced Options** make sure or enter the following into the Spark Config box:
+```
+spark.databricks.delta.preview.enabled true
+```
+
+5. Select **Create Cluster**. It will take 3-5 minutes for the cluster to be created and started.
+
+#### Task 5: Open Azure Databricks and load lab notebooks
+
+In this task, you will import the notebooks contained in this git repo Event Hub real-time advanced analytics into your Azure Databricks workspace.
+
+1. Inside of Databricks workspace, Select **Workspace** from the left-hand menu, then select **Users** and select your user account (email address), and then select the down arrow on top of your user workspace and select **Import** from the context menu.
+
+2. Within the Import Notebooks dialog, select URL for Import from, and then paste the following into the box: ```
+```
+ADD URL HERE
+```
+
+3. Select Import.
+
+You should now see a folder named EventHubAdvancedAnalytics in your user workspace. This folder contains all of the notebooks you will use throughout this lab.
+
+#### Task 6: Configure Azure Databricks Key Vault-backed secrets
+
+In this task, you will connect to your Azure Databricks workspace and configure Azure Databricks secrets to use your Azure Key Vault account as a backing store.
+
+1. Return to the Azure portal, navigate to your newly provisioned Key Vault account and select **Properties** on the left-hand menu.
+
+2. Copy the **DNS Name** and **Resource ID** property values and paste them to Notepad or some other text application that you can reference later. These values will be used in the next section.
+
+3. Navigate to the Azure Databricks workspace you provisioned above, and select Launch Workspace from the overview blade, signing into the workspace with your Azure credentials, if required.
+
+4. In your browser's URL bar, append #secrets/createScope to your Azure Databricks base URL (for example, https://eastus.azuredatabricks.net#secrets/createScope).
+
+5. Enter ```key-vault-secrets``` for the name of the secret scope.
+
+6. Select **Creator** within the Manage Principal drop-down to specify only the creator (which is you) of the secret scope has the MANAGE permission.
+
+> MANAGE permission allows users to read and write to this secret scope, and, in the case of accounts on the Azure Databricks Premium Plan, to change permissions for the scope.
+
+> Your account must have the Azure Databricks Premium Plan for you to be able to select Creator. This is the recommended approach: grant MANAGE permission to the Creator when you create the secret scope, and then assign more granular access permissions after you have tested the scope.
+
+7. Enter the **DNS Name** (for example, https://selab-vault.vault.azure.net/) and **Resource ID** you copied earlier during the Key Vault creation step, for example: **/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourcegroups/lab/providers/Microsoft.KeyVault/vaults/selab-vault**.
+
+8. Select **Create**.
+
+After a moment, you will see a dialog verifying that the secret scope has been created.
+
+#### Task 7: Install the Event Hub Spark Connector in Databricks
+
+1. Select Workspace from the left-hand menu, then select the drop down arrow next to Shared and select **Create** and **Library** from the context menus.
+
+2. On the Create Library page, select **Maven** under Library Source, and then select **Search Packages** next to the Coordinates text box.
+
+3. On the Search Packages dialog, select **Maven Central** from the source drop down, enter **azure-eventhubs-spark** into the search box, and click Select next to Group Id **com.microsoft**, Artifact Id : **azure:azure-eventhubs-spark_2.11** release **2.3.12**
+
+4. Select **Create** to finish installing the library.
+
+5. On the following screen, check the box for **Install automatically on all clusters**, and select Confirm when prompted.
 
 
-
-
-#### Create a service principal for OAuth access to the ADLS Gen2 filesystem
 
 ### deploy Azure Databricks
 
