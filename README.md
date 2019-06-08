@@ -437,6 +437,12 @@ After a moment, you will see a dialog verifying that the secret scope has been c
 
 
 
+## Optionnal (If we have time)
+Consume data from Power BI : 
+https://eastus2.azuredatabricks.net:443/sql/protocolv1/o/5123375449920176/0408-155211-bonds806
+token
+dapi9f57dcb947fe8af555b0ade11b0b5559
+
 ### deploy Azure Databricks
 
 
