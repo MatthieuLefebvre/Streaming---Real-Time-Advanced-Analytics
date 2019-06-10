@@ -7,28 +7,26 @@ Something like: simple producer -> to Event Hubs -> to Databricks -> Datalake ->
 
 ## Getting Started
 
-These instructions will get you ....
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+1. You need Visual Studio to run the producer events .Net program
+2. You need access to a VNET to avoid to be blocked by firewall. (tools access to SQL for example)  
 
-```
-Give examples
-```
+
 
 ### Setup
 #### Step 1 : Ressource Group
-Is to create a Ressource Group where you will put every Azure ressource we will used for this workshop.
+Step 1 is to create a Ressource Group where you will put every Azure ressource we will used for this workshop.
 Be carefull to select the right Azure Subscription and prefered Region (East US)
-Please respect any naming convention SCCoE have defined like : "rg-projectname"
+Please respect any naming convention you could have defined like : "rg-projectname"
 
 #### Step 2 : Event Hub
 Deploy an Azure Event Hub into your existing Ressource Group
 Provide a relevant name. Be careful the convention name for this ressource should respect this rule : 
   The namespace can contain only letters, numbers, and hyphens.
   The namespace must start with a letter, and it must end with a letter or number.
- example : malefe-transac-eh
+ example : "useralias-transac-eh"
  Pricing Tier : select Strandard
  Do not enable Kafka or namespace zone redundant
  Location : East US
@@ -36,11 +34,9 @@ Provide a relevant name. Be careful the convention name for this ressource shoul
  Do not enable auto-inflate.
  
  
- 
  When the Event Hub is deploy, go to the ressource and add a new Event Hub Entity : "transactions" which will be related to our event producer. Set the partition count to 10 and retention period to 1 day. Do not enable Event Hub Capture. 
  
------ TIPS : ----- 
-The partition count on an event hub cannot be modified after setup. With that in mind, it is important to think about how many partitions you need before getting started.
+> The partition count on an event hub cannot be modified after setup. With that in mind, it is important to think about how many partitions you need before getting started.
 Important point to remember is, TU is configured at namespace level. And, ONE Event Hubs namespace can have multiple eventhubs. Each eventhub can have different no. of partitions.
 If you select 5 or more TUs on the Namespace and have only 1 EventHub with 4 partitions - you will get a max. of 4 MBPS or 4K msgs/sec.
 
