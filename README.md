@@ -385,7 +385,7 @@ In this task, you will import the notebooks contained in this git repo Event Hub
 
 2. Within the Import Notebooks dialog, select URL for Import from, and then paste the following into the box: ```
 ```
-ADD URL HERE
+[dbc file](https://github.com/MatthieuLefebvre/Streaming---Real-Time-Advanced-Analytics/blob/master/EventHubAdvancedAnalytics.dbc)
 ```
 
 3. Select Import.
