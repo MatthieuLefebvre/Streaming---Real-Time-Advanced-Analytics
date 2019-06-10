@@ -267,21 +267,7 @@ az ad sp create-for-rbac -n "seanalytics-sp" --role "Storage Blob Data Contribut
 
 9 To verify the role assignment, select Access control (IAM) from the left-hand menu of the ADLS Gen2 Storage account blade, and then select the Role assignments tab and locate seanalytics-sp under the STORAGE BLOB DATA CONTRIBUTOR role.
 
-#### Task 1 BIS : Deal with Data lake access if you don't have Service Principal access permission : 
 
-A mount could be done with the databricks cluster using this : 
-
-```
-configs = {"dfs.adls.oauth2.access.token.provider.type": "ClientCredential",
-  "dfs.adls.oauth2.client.id": "YourAppID",
-  "dfs.adls.oauth2.credential": "YouAccessKey",
-  "dfs.adls.oauth2.refresh.url": "YourURI"}
-
-dbutils.fs.mount(
-  source = "abfss://<file-system-name>@<storage-account-name>.dfs.core.windows.net/folder1",
-  mount_point = "/mnt/mydata",
-  extra_configs = configs)
-```
 
 #### Task 2: Add the service principal credentials and Tenant Id to Azure Key Vault
 
@@ -449,6 +435,39 @@ After a moment, you will see a dialog verifying that the secret scope has been c
 
 #### Task 8: Start with Environment-Setup
 Check code and adpat by puting your env. config
+
+##### Mount Data lake store : (If you don't have service principal access) 
+
+#### Task 1 BIS : Deal with Data lake access if you don't have Service Principal access permission : 
+
+A mount could be done with the databricks cluster using this : 
+
+
+```
+storage_account_name = 'yourdatalakename'
+
+file_system = 'transactions'
+
+storage_account_access_key = dbutils.secrets.get(scope = 'YourClientKey', key = 'YourAccessKey')
+
+spark.conf.set('fs.azure.account.key.'+storage_account_name+'.dfs.core.windows.net', storage_account_access_key)
+
+```
+
+
+> another code to mounnt data lake store (With App registration access)
+```
+configs = {"dfs.adls.oauth2.access.token.provider.type": "ClientCredential",
+  "dfs.adls.oauth2.client.id": "YourAppID",
+  "dfs.adls.oauth2.credential": "YouAccessKey",
+  "dfs.adls.oauth2.refresh.url": "YourURI"}
+
+dbutils.fs.mount(
+  source = "abfss://<file-system-name>@<storage-account-name>.dfs.core.windows.net/folder1",
+  mount_point = "/mnt/mydata",
+  extra_configs = configs)
+```
+
 
 #### Task 9: Exercice 1-Exploring-Historical-Transactions
 To become familiar with Databriks
