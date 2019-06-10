@@ -438,7 +438,7 @@ Check code and adpat by puting your env. config
 
 ##### Mount Data lake store : (If you don't have service principal access) 
 
-#### Task 1 BIS : Deal with Data lake access if you don't have Service Principal access permission : 
+To deal with Data lake access if you don't have Service Principal access permission, you can modify envrironment-setup script to add this : (Please comment or delete other part related to Data lake with Service Principal) 
 
 A mount could be done with the databricks cluster using this : 
 
