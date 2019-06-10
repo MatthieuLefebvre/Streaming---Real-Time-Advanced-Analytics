@@ -267,6 +267,22 @@ az ad sp create-for-rbac -n "seanalytics-sp" --role "Storage Blob Data Contribut
 
 9 To verify the role assignment, select Access control (IAM) from the left-hand menu of the ADLS Gen2 Storage account blade, and then select the Role assignments tab and locate seanalytics-sp under the STORAGE BLOB DATA CONTRIBUTOR role.
 
+#### Task 1 BIS : Deal with Data lake access if you don't have Service Principal access permission : 
+
+A mount could be done with the databricks cluster using this : 
+
+```
+configs = {"dfs.adls.oauth2.access.token.provider.type": "ClientCredential",
+  "dfs.adls.oauth2.client.id": "YourAppID",
+  "dfs.adls.oauth2.credential": "YouAccessKey",
+  "dfs.adls.oauth2.refresh.url": "YourURI"}
+
+dbutils.fs.mount(
+  source = "abfss://<file-system-name>@<storage-account-name>.dfs.core.windows.net/folder1",
+  mount_point = "/mnt/mydata",
+  extra_configs = configs)
+```
+
 #### Task 2: Add the service principal credentials and Tenant Id to Azure Key Vault
 
 1.Deploy an Azure key Vault ressource into your ressource group
