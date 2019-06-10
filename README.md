@@ -40,7 +40,7 @@ Provide a relevant name. Be careful the convention name for this ressource shoul
 Important point to remember is, TU is configured at namespace level. And, ONE Event Hubs namespace can have multiple eventhubs. Each eventhub can have different no. of partitions.
 If you select 5 or more TUs on the Namespace and have only 1 EventHub with 4 partitions - you will get a max. of 4 MBPS or 4K msgs/sec.
 
-Ideally, you will need more partitions than TUs. First, model your partition count as mentioned above. Start with 1 TU while you are developing your Solution. Once done, when you are doing load testing or going live, increase TUs to tune to your load. Remember, you could have multiple eventhubs in a Namespace. So, having 20 TUs at Namespace level and 10 eventhubs with 4 partitions each - can deliver 20 MBPS across the Namespace
+> Ideally, you will need more partitions than TUs. First, model your partition count as mentioned above. Start with 1 TU while you are developing your Solution. Once done, when you are doing load testing or going live, increase TUs to tune to your load. Remember, you could have multiple eventhubs in a Namespace. So, having 20 TUs at Namespace level and 10 eventhubs with 4 partitions each - can deliver 20 MBPS across the Namespace
 You can't have more concurrent readers than you have partitions. If you want to have 5 concurrent readers, you need 5 partitions.
 ----- END OF TIPS -----
  
@@ -64,13 +64,13 @@ Then Select Sender access policy and copy Connection string-primary key value an
 
  #### Step 3 : Deploy CosmosDB
 Deploy an Azure CosmosDB into your existing Ressource Group
-Provide a relevant db account name : 'malefe-cosmosdb-analytics'
+Provide a relevant db account name : 'useralias-cosmosdb-analytics'
 Select the API : Core (SQL)
 Location : East US
 Click on create.
 
 Once the service is up, using Data Explorer, create 
-a new database : 'malefedb'
+a new database : 'useraliasdb'
 click on Provision database throughput and set the value to 15000
 add a new container : 'transactions'
 add a new partition key : '/ipCountryCode'
@@ -90,7 +90,7 @@ Copy the endpoint URI and Primary Key for Cosmos DB. Save this value to notepad 
 
  #### Step 4 : Configuring Event Hubs and the transaction generator
  In this step, you will configure the payment transaction data generator and connect it to your Event Hub.
- Download repo code 
+ Clone or Download from repo 
  open TransactionGenerator.sln in the TransactionGenerator directory.
  This will open the solution in Visual Studio.
  
@@ -181,7 +181,6 @@ var connectionPolicy = new ConnectionPolicy
 };
 ```
 
-
 line 29 : change private const string DatabaseName to paste the exact dbname you have configured.
 
 Save your changes.
@@ -247,26 +246,26 @@ As an added layer of security when accessing an ADLS Gen2 filesystem using Datab
 
 2. In the Azure portal, select the Cloud Shell icon in the top toolbar.
 
-2. Ensure PowerShell is selected in the Cloud Shell pane
+3. Ensure PowerShell is selected in the Cloud Shell pane
 
-3. Next, you will issue a command to create a service principal named seanalytics-sp and assign it to the Storage Blob Data Contributor role on your ADLS Gen2 Storage account. The command will be in the following format:
+4. Next, you will issue a command to create a service principal named seanalytics-sp and assign it to the Storage Blob Data Contributor role on your ADLS Gen2 Storage account. The command will be in the following format:
 
 ```
 az ad sp create-for-rbac -n "seanalytics-sp" --role "Storage Blob Data Contributor" --scopes {adls-gen2-storage-account-resource-id}
 ```
 > **IMPORTANT** : You will need to replace the {adls-gen2-storage-account-resource-id} value with the resource ID of your ADLS Gen2 Storage account.
 
-4. To retrieve the ADLS Gen2 Storage account resource ID you need to replace above, navigate to your Resource groups in the Azure navigation menu.
+5. To retrieve the ADLS Gen2 Storage account resource ID you need to replace above, navigate to your Resource groups in the Azure navigation menu.
 
-5. In your resource group, select the ADLS Gen2 Storage account you provisioned previously, and on the ADLS Gen2 Storage account blade select 
+6. In your resource group, select the ADLS Gen2 Storage account you provisioned previously, and on the ADLS Gen2 Storage account blade select 
 - **Properties** under **Settings** in the left-hand menu, 
 - and then select the copy to clipboard button to the right of the **Storage account resource ID** value.
 
-6. Paste the Storage account resource ID into the command above, and then copy and paste the updated ```az ad sp create-for-rbac``` command at the Cloud Shell prompt and press Enter. The command should retrieve Json like value with your subscription ID, App ID, etc.
+7. Paste the Storage account resource ID into the command above, and then copy and paste the updated ```az ad sp create-for-rbac``` command at the Cloud Shell prompt and press Enter. The command should retrieve Json like value with your subscription ID, App ID, etc.
 
-7. Copy the output from the command into a text editor, as you will need it in the following steps.
+8. Copy the output from the command into a text editor, as you will need it in the following steps.
 
-8. To verify the role assignment, select Access control (IAM) from the left-hand menu of the ADLS Gen2 Storage account blade, and then select the Role assignments tab and locate seanalytics-sp under the STORAGE BLOB DATA CONTRIBUTOR role.
+9 To verify the role assignment, select Access control (IAM) from the left-hand menu of the ADLS Gen2 Storage account blade, and then select the Role assignments tab and locate seanalytics-sp under the STORAGE BLOB DATA CONTRIBUTOR role.
 
 #### Task 2: Add the service principal credentials and Tenant Id to Azure Key Vault
 
@@ -431,6 +430,22 @@ After a moment, you will see a dialog verifying that the secret scope has been c
 
 5. On the following screen, check the box for **Install automatically on all clusters**, and select Confirm when prompted.
 
+
+#### Task 8: Start with Environment-Setup
+Check code and adpat by puting your env. config
+
+#### Task 9: Exercice 1-Exploring-Historical-Transactions
+To become familiar with Databriks
+executing Cell with CTRL+Enter
+
+#### Task 10: Exercice 2- Consuming from CosmosDB
+To become familiar with Spark Streaming and Databricks Delta
+executing Cell with CTRL+Enter
+As part as the exercice check if all librairies are not missing... 
+
+#### Task 10: Exercice 3- Consuming from EvenyHub
+To become familiar with Spark Streaming Event Hub
+executing Cell with CTRL+Enter
 
 ### Deploy Azure SQL Datawerouhse and connect to Data lake
 
