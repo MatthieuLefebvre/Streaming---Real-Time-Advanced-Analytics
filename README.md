@@ -436,6 +436,20 @@ After a moment, you will see a dialog verifying that the secret scope has been c
 5. On the following screen, check the box for **Install automatically on all clusters**, and select Confirm when prompted.
 
 
+### Deploy Azure SQL Datawerouhse and connect to Data lake
+
+1. Exercice - Deploy by yourself
+Don't forget to open firewall or use vnet to connect your tools to access to SQL Server. 
+
+2. Connect to data using Polybase connector
+[See doc here](https://docs.microsoft.com/en-us/azure/sql-data-warehouse/sql-data-warehouse-load-from-azure-data-lake-store) and this[ doc](https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-2017)
+> Tips : CREATE EXTERNAL DATA SOURCE - be careful here and use the right connector (abfs...)
+```abfss	<container>@<storage_account>.dfs.core.windows.net```
+  
+
+Option : instead of Polybase we can use Azure Data Factory to load data into sql DW. 
+
+
 
 ## Optionnal (If we have time)
 Consume data from Power BI : 
@@ -443,68 +457,15 @@ https://eastus2.azuredatabricks.net:443/sql/protocolv1/o/5123375449920176/0408-1
 token
 dapi9f57dcb947fe8af555b0ade11b0b5559
 
-### deploy Azure Databricks
 
 
-And repeat
 
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Matthieu Lefebvre** [Microsoft](https://www.linkedin.com/in/matthieu-lefebvre-92166728/)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
 
