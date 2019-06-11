@@ -185,6 +185,9 @@ line 29 : change private const string DatabaseName to paste the exact dbname you
 
 Save your changes.
 
+> From the repo, download cleaned-transactions.7z, unzip localy and put the csv file into the project folder TransactionGenerator/ 
+
+
 ### Run
 
 Run the console app by clicking Debug, then Start Debugging in the top menu in Visual Studio, or press F-5 on your keyboard.
